@@ -58,7 +58,7 @@ D.dongs.forEach(d=>{toPaths(d.clip).forEach(ps=>{ps[0].forEach(ll=>bounds.extend
 // 우편번호 경계
 D.zips.forEach(z=>toPaths(z.g).forEach(ps=>layer.zip.push(new naver.maps.Polygon({map:null,paths:ps,fillOpacity:0,strokeColor:'#6366f1',strokeWeight:1,strokeOpacity:.7,strokeStyle:'shortdash',clickable:false}))));
 // 동 경계
-D.dongs.forEach(d=>toPaths(d.full).forEach(ps=>layer.dong.push(new naver.maps.Polygon({map,paths:ps,fillOpacity:0,strokeColor:'#374151',strokeWeight:1.5,strokeOpacity:.8,strokeStyle:'dash',clickable:false}))));
+D.dongs.forEach(d=>toPaths(d.full).forEach(ps=>layer.dong.push(new naver.maps.Polygon({map,paths:ps,fillOpacity:0,strokeColor:'#000000',strokeWeight:1,strokeOpacity:1,strokeStyle:'solid',clickable:false}))));
 // 배송구역 외곽
 toPaths(D.zone).forEach(ps=>layer.zone.push(new naver.maps.Polygon({map,paths:ps,fillOpacity:0,strokeColor:'#dc2626',strokeWeight:3.5,strokeOpacity:.95,clickable:false})));
 // 라벨
@@ -66,12 +66,16 @@ D.dongs.forEach(d=>{d.mk=new naver.maps.Marker({map,position:new naver.maps.LatL
  icon:{content:`<div class="lbl">${d.dong}${d.ratio<0.95?'<small> (일부)</small>':''}<br><b>${fmt(d.n)}건</b></div>`,anchor:new naver.maps.Point(0,0)},zIndex:100});
  naver.maps.Event.addListener(d.mk,'click',()=>info(d));layer.lbl.push(d.mk)});
 map.fitBounds(bounds,{top:30,right:30,bottom:30,left:30});
-const iw=new naver.maps.InfoWindow({borderWidth:1,borderColor:'#d1d5db',anchorSize:new naver.maps.Size(8,8)});
-function info(d){iw.setContent(`<div style="padding:10px 12px;font-size:13px;line-height:1.6"><b>${d.gu} ${d.dong}</b><br>배송 ${fmt(d.n)}건 (${(d.n/D.total*100).toFixed(1)}%)<br><span style="color:#6b7280">동 면적 중 배송구역 ${Math.round(d.ratio*100)}%</span></div>`);iw.open(map,d.mk.getPosition())}
+const iw=new naver.maps.InfoWindow({disableAnchor:false,borderWidth:1,borderColor:'#d1d5db',anchorSize:new naver.maps.Size(8,8)});
+let cur=null,lastOpen=0;
+function info(d){lastOpen=Date.now();if(iw.getMap()&&cur===d){iw.close();cur=null;return}cur=d;iw.setContent(`<div style="position:relative;padding:10px 28px 10px 12px;font-size:13px;line-height:1.6"><button onclick="iw.close()" title="닫기" style="position:absolute;top:4px;right:6px;border:0;background:none;font-size:16px;line-height:1;color:#6b7280;cursor:pointer">×</button><b>${d.gu} ${d.dong}</b><br>배송 ${fmt(d.n)}건 (${(d.n/D.total*100).toFixed(1)}%)<br><span style="color:#6b7280">동 면적 중 배송구역 ${Math.round(d.ratio*100)}%</span></div>`);iw.open(map,d.mk.getPosition())}
 // 황금점 매장
 const store=new naver.maps.Marker({map,position:new naver.maps.LatLng(35.8437114,128.6234277),zIndex:200,
- icon:{content:'<div style="transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center"><div style="background:#1d4ed8;color:#fff;font-size:12px;font-weight:700;padding:4px 8px;border-radius:6px;white-space:nowrap;box-shadow:0 1px 4px rgba(0,0,0,.3)">장보고식자재마트 황금점</div><div style="width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-top:8px solid #1d4ed8"></div></div>',anchor:new naver.maps.Point(0,0)}});
-naver.maps.Event.addListener(store,'click',()=>{iw.setContent('<div style="padding:10px 12px;font-size:13px;line-height:1.6"><b>장보고식자재마트 황금점</b><br>대구 수성구 동대구로29길 11</div>');iw.open(map,store)});
+ icon:{content:'<svg width="32" height="42" viewBox="0 0 32 42" style="display:block;filter:drop-shadow(0 2px 2px rgba(0,0,0,.35))"><path d="M16 1C7.7 1 1 7.6 1 15.8 1 27 16 41 16 41s15-14 15-25.2C31 7.6 24.3 1 16 1z" fill="#1d4ed8" stroke="#fff" stroke-width="2"/><circle cx="16" cy="15.5" r="5.5" fill="#fff"/></svg>',size:new naver.maps.Size(32,42),anchor:new naver.maps.Point(16,41)},title:'장보고식자재마트 황금점'});
+naver.maps.Event.addListener(store,'click',()=>{iw.setContent('<div style="position:relative;padding:10px 28px 10px 12px;font-size:13px;line-height:1.6"><button onclick="iw.close()" title="닫기" style="position:absolute;top:4px;right:6px;border:0;background:none;font-size:16px;line-height:1;color:#6b7280;cursor:pointer">×</button><b>장보고식자재마트 황금점</b><br>대구 수성구 동대구로29길 11</div>');cur=null;lastOpen=Date.now();iw.open(map,store)});
+naver.maps.Event.addListener(map,'click',()=>{if(Date.now()-lastOpen>300){iw.close();cur=null}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')iw.close()});
+naver.maps.Event.addListener(iw,'close',()=>cur=null);
 const tog=(k,on)=>layer[k].forEach(o=>o.setMap(on?map:null));
 oZone.onchange=e=>tog('zone',e.target.checked);oDong.onchange=e=>tog('dong',e.target.checked);
 oZip.onchange=e=>tog('zip',e.target.checked);oLbl.onchange=e=>tog('lbl',e.target.checked);
