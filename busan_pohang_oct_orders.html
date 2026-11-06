@@ -34,7 +34,7 @@ td.n{text-align:right;font-variant-numeric:tabular-nums}td.k{color:#9ca3af;font-
 <header><h1>10월 온라인 주문 분포</h1>
 <div class="tabs" id="tabs"></div>
 <div class="seg" id="kinds"><button data-m="a">전체</button><button data-m="b">바로배송</button><button data-m="d">당일배송</button></div>
-<div class="seg unit" id="units" style="display:none"><button data-l="li">읍·면은 리 단위</button><button data-l="emd">읍·면 합계</button></div>
+<div class="seg unit" id="units" style="display:none"><button data-l="emd">읍·면 합계</button><button data-l="li">읍·면은 리 단위</button></div>
 <div class="sub" id="period"></div>
 <div class="kpi"><div><b id="k1"></b><span id="k1t">배송건수</span></div><div><b id="k2"></b><span id="k2t">법정동</span></div><div><b id="k3"></b><span>우편번호</span></div></div></header>
 <div class="opts">
@@ -74,7 +74,7 @@ function clear(){Object.values(layer).flat().forEach(o=>o.setMap(null));layer={z
 const vis=()=>({zone:oZone.checked,dong:oDong.checked,zip:oZip.checked,lbl:oLbl.checked,fill:true});
 const cntM=(d,m)=>{const x=d.m[m];return x?x.n+(oCxl.checked?x.c:0):0};
 const cnt=d=>cntM(d,mode);
-const lvlOf=s=>s.levels[level[s.name]]?level[s.name]:(s.levels.li?'li':'emd');
+const lvlOf=s=>s.levels[level[s.name]]?level[s.name]:'emd';
 function show(s,keep){
  active=s;closeIw();clear();const v=vis(),L=lvlOf(s),U=s.levels[L].filter(d=>d.m[mode]);
  mx=Math.max(1,...U.map(cnt));
